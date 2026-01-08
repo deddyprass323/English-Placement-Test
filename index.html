@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulasi TOEFL Elementary - 60 Soal</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: auto; padding: 20px; background: #f4f4f4; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .section { margin-bottom: 40px; display: none; }
+        .question { margin-bottom: 20px; padding: 15px; border-left: 5px solid #3498db; background: #fafafa; }
+        .active { display: block; }
+        button { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #2980b9; }
+        .result-box { display: none; padding: 20px; background: #e8f6f3; border-radius: 8px; }
+        .reading-text { font-style: italic; background: #eee; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>TOEFL Elementary Simulation</h1>
+    <div id="intro">
+        <p>Tes ini terdiri dari 60 nomor (20 per bagian). Klik tombol di bawah untuk memulai.</p>
+        <button onclick="startTest()">Mulai Tes</button>
+    </div>
+
+    <div id="section1" class="section">
+        <h2>Section 1: Listening Comprehension</h2>
+        <p><i>Instruksi: Baca transkrip percakapan singkat dan pilih jawaban terbaik.</i></p>
+        <div id="listening-questions"></div>
+        <button onclick="showSection(2)">Lanjut ke Structure</button>
+    </div>
+
+    <div id="section2" class="section">
+        <h2>Section 2: Structure & Written Expression</h2>
+        <p><i>Instruksi: Pilih kata atau frasa yang paling tepat untuk melengkapi kalimat.</i></p>
+        <div id="structure-questions"></div>
+        <button onclick="showSection(3)">Lanjut ke Reading</button>
+    </div>
+
+    <div id="section3" class="section">
+        <h2>Section 3: Reading Comprehension</h2>
+        <div class="reading-text">
+            <b>Passage 1:</b> The Komodo dragon is the largest living species of lizard. They are found in the Indonesian islands of Komodo, Rinca, Flores, and Gili Motang. They use their long tongues to detect, taste, and smell stimuli.<br><br>
+            <b>Passage 2:</b> Computers have evolved significantly. The first computers were massive, occupying entire rooms. Today, smartphones are more powerful than the computers that sent humans to the moon.
+        </div>
+        <div id="reading-questions"></div>
+        <button onclick="calculateScore()">Kirim Jawaban</button>
+    </div>
+
+    <div id="result" class="result-box">
+        <h2>Hasil Analisis Anda</h2>
+        <div id="score-display"></div>
+        <div id="analysis-display"></div>
+        <button onclick="location.reload()">Ulangi Tes</button>
+    </div>
+</div>
+
+<script>
+// Bank Data Soal (Diringkas untuk contoh fungsional, bisa ditambah hingga 20 per section)
+const questions = {
+    listening: [
+        { q: "Man: 'Are you coming to the party?' Woman: 'I wish I could, but I have an exam.' Q: What does the woman mean?", a: ["She will go", "She is busy", "She likes parties", "She has no exam"], c: 1 },
+        { q: "Man: 'Where is my tie?' Woman: 'It's on the chair where you left it.' Q: Where is the tie?", a: ["In the closet", "On the table", "On the chair", "Under the bed"], c: 2 }
+        // ... ulangi hingga 20
+    ],
+    structure: [
+        { q: "She _______ to the market every morning.", a: ["go", "goes", "gone", "going"], c: 1 },
+        { q: "The students _______ studying when the bell rang.", a: ["is", "was", "were", "are"], c: 2 }
+        // ... ulangi hingga 20
+    ],
+    reading: [
+        { q: "Where can Komodo dragons be found?", a: ["Only in Bali", "Across all Indonesia", "Specific Indonesian islands", "In Australia"], c: 2 },
+        { q: "What is said about early computers?", a: ["They were small", "They were room-sized", "They were powerful", "They used tongues"], c: 1 }
+        // ... ulangi hingga 20
+    ]
+};
+
+// Fungsi generate soal otomatis (simulasi 20 nomor per bagian)
+function renderQuestions(type, containerId) {
+    const container = document.getElementById(containerId);
+    for(let i=0; i<20; i++) {
+        const item = questions[type][i % questions[type].length]; // Loop data contoh
+        const html = `<div class="question">
+            <p>${i+1}. ${item.q}</p>
+            ${item.a.map((opt, idx) => `<input type="radio" name="${type}${i}" value="${idx}"> ${opt}<br>`).join('')}
+        </div>`;
+        container.innerHTML += html;
+    }
+}
+
+function startTest() {
+    document.getElementById('intro').style.display = 'none';
+    renderQuestions('listening', 'listening-questions');
+    renderQuestions('structure', 'structure-questions');
+    renderQuestions('reading', 'reading-questions');
+    showSection(1);
+}
+
+function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('section' + id).classList.add('active');
+    window.scrollTo(0,0);
+}
+
+function calculateScore() {
+    let scores = { listening: 0, structure: 0, reading: 0 };
+    
+    // Hitung Benar
+    for(let i=0; i<20; i++) {
+        if(document.querySelector(`input[name="listening${i}"]:checked`)?.value == questions.listening[i % 2].c) scores.listening++;
+        if(document.querySelector(`input[name="structure${i}"]:checked`)?.value == questions.structure[i % 2].c) scores.structure++;
+        if(document.querySelector(`input[name="reading${i}"]:checked`)?.value == questions.reading[i % 2].c) scores.reading++;
+    }
+
+    // Konversi Skor TOEFL Sederhana (Skala 310 - 677)
+    // Rumus: ((S1 + S2 + S3) * 10) / 3. Di sini kita asumsikan 20 soal = full poin tiap section.
+    const convert = (correct) => (correct / 20) * 68; 
+    const finalScore = Math.round(((convert(scores.listening) + convert(scores.structure) + convert(scores.reading)) * 10) / 3);
+
+    displayResult(finalScore, scores);
+}
+
+function displayResult(total, details) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    const resDiv = document.getElementById('result');
+    resDiv.style.display = 'block';
+
+    let status = total >= 400 ? "<b style='color:green'>LULUS</b>" : "<b style='color:red'>TIDAK LULUS</b>";
+    
+    let analysis = `
+        <p>Total Skor: <b>${total}</b> [${status}]</p>
+        <hr>
+        <h3>Analisis Kompetensi:</h3>
+        <p><b>Listening (${details.listening}/20):</b> ${details.listening > 15 ? 'Kuat dalam menangkap ide utama.' : 'Lemah dalam memahami konteks percakapan.'}</p>
+        <p><b>Structure (${details.structure}/20):</b> ${details.structure > 15 ? 'Memahami tata bahasa dengan baik.' : 'Perlu belajar kembali tenses dan subject-verb agreement.'}</p>
+        <p><b>Reading (${details.reading}/20):</b> ${details.reading > 15 ? 'Kosakata luas.' : 'Kesulitan menemukan informasi spesifik dalam teks.'}</p>
+        <hr>
+        <h3>Rekomendasi Langkah:</h3>
+        <ul>
+            <li>Tingkatkan listening dengan menonton video tanpa subtitle.</li>
+            <li>Pelajari "Inverted Sentence" dan "Parallel Structure" untuk bagian Grammar.</li>
+            <li>Biasakan membaca artikel berita bahasa Inggris (BBC/VOA) minimal 1 hari sekali.</li>
+        </ul>
+    `;
+    document.getElementById('analysis-display').innerHTML = analysis;
+}
+</script>
+
+</body>
+</html>
